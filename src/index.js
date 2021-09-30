@@ -48,6 +48,7 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
+      isSortMovesASC: true
     }
   }
 
@@ -75,6 +76,11 @@ class Game extends React.Component {
       xIsNext: (step % 2) === 0,
     });
   }
+  reverseMoveList() {
+    this.setState({
+      isSortMovesASC: !this.state.isSortMovesASC,
+    });
+  }
 
   render() {
     const history = this.state.history;
@@ -88,7 +94,7 @@ class Game extends React.Component {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
 
-    const moves = history.map((step, move) => {
+    let moves = history.map((step, move) => {
       let col = step.moveLocation % 3;
       let row = Math.floor(step.moveLocation / 3);
       let desc = move ?
@@ -103,6 +109,9 @@ class Game extends React.Component {
         </li>
       )
     })
+    if (!this.state.isSortMovesASC) {
+      moves.reverse()
+    }
     return (
 
       <div className="game">
@@ -114,6 +123,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <button onClick={() => this.reverseMoveList()}>{"Reverse List Move"}</button>
           <ol>{moves}</ol>
         </div>
       </div>
