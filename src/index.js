@@ -62,7 +62,7 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
+    if (calculateWinner(squares, this.state.stepNumber).winner || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? "X" : "O";
@@ -91,15 +91,17 @@ class Game extends React.Component {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const winInfo = calculateWinner(current.squares, this.state.stepNumber);
 
     let status;
-    let winningSquares = [];
-    if (winner) {
-      status = 'Winner: ' + winner;
-      winningSquares = getWinningSquares(current.squares)
+    if (winInfo.winner) {
+      status = 'Winner: ' + winInfo.winner;
     } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      if (winInfo.isDraw) {
+        status = "Draw Game!!!"
+      } else {
+        status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+      }
     }
 
     let moves = history.map((step, move) => {
@@ -127,7 +129,7 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
-            winningSquares={winningSquares}
+            winningSquares={winInfo.winningSquares}
           />
         </div>
         <div className="game-info">
@@ -151,7 +153,7 @@ ReactDOM.render(
 );
 
 
-function calculateWinner(squares) {
+function calculateWinner(squares, stepNumber) {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -162,30 +164,21 @@ function calculateWinner(squares) {
     [0, 4, 8],
     [2, 4, 6]
   ]
+  let ret = {
+    winner: null,
+    winningSquares: [],
+    isDraw: false,
+  }
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      ret.winner = squares[a];
+      ret.winningSquares = [a, b, c]
+      return ret;
     }
   }
-  return null;
-}
-function getWinningSquares(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ]
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return [a, b, c];
-    }
+  if (stepNumber === 9) {
+    ret.isDraw = true
   }
-  return null;
+  return ret;
 }
