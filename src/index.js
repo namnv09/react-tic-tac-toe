@@ -58,6 +58,15 @@ class Game extends React.Component {
     }
   }
 
+  resetGame(i) {
+    const history = this.state.history.slice(0, 1);
+    this.setState({
+      history: history,
+      stepNumber: 0,
+      xIsNext: true,
+    });
+  }
+
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
@@ -135,6 +144,7 @@ class Game extends React.Component {
         <div className="game-info">
           <div>{status}</div>
           <button onClick={() => this.reverseMoveList()}>{"Sort Moves"}</button>
+          <button onClick={() => this.resetGame()}>{"Reset Game"}</button>
           <ol>{moves}</ol>
         </div>
       </div>
