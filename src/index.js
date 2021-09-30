@@ -3,19 +3,22 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square(props) {
+  const winningSquareStyle = {
+    border: '3px solid rgb(202, 20, 20)'
+  }
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className="square" onClick={props.onClick} style={props.isHighlight ? winningSquareStyle : null}>
       {props.value}
     </button>
   )
 }
-
 class Board extends React.Component {
-  renderSquare(i) {
+  renderSquare(i, isHighlight) {
     return (
       <Square
         key={i}
         value={this.props.squares[i]}
+        isHighlight={isHighlight}
         onClick={() => this.props.onClick(i)}
       />
     );
@@ -23,10 +26,13 @@ class Board extends React.Component {
 
   render() {
     let boardRows = [];
+    let winningSquares = this.props.winningSquares;
     for (let row = 0; row < 3; row++) {
       let cells = [];
       for (let col = 0; col < 3; col++) {
-        cells.push(this.renderSquare(row * 3 + col))
+        const id = row * 3 + col;
+        const isHighlight = winningSquares.indexOf(id) >= 0;
+        cells.push(this.renderSquare(id, isHighlight))
       }
       boardRows.push(<div className="board-row" key={row}>{cells} </div>)
     }
@@ -88,8 +94,10 @@ class Game extends React.Component {
     const winner = calculateWinner(current.squares);
 
     let status;
+    let winningSquares = [];
     if (winner) {
       status = 'Winner: ' + winner;
+      winningSquares = getWinningSquares(current.squares)
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
@@ -119,11 +127,12 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
+            winningSquares={winningSquares}
           />
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <button onClick={() => this.reverseMoveList()}>{"Reverse List Move"}</button>
+          <button onClick={() => this.reverseMoveList()}>{"Sort Moves"}</button>
           <ol>{moves}</ol>
         </div>
       </div>
@@ -157,6 +166,25 @@ function calculateWinner(squares) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
+    }
+  }
+  return null;
+}
+function getWinningSquares(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return [a, b, c];
     }
   }
   return null;
